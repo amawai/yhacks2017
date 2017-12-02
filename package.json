@@ -1,0 +1,30 @@
+{
+  "name": "ui-services",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "./node_modules/.bin/mocha --reporter spec"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^1.2.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "~1.17.1",
+    "chai": "^4.0.2",
+    "chai-http": "^3.0.0",
+    "cookie-parser": "~1.4.3",
+    "crypto": "^0.0.3",
+    "debug": "~2.6.3",
+    "express": "~4.15.2",
+    "jsonwebtoken": "^7.4.1",
+    "mocha": "^3.4.2",
+    "mongoose": "4.10.8",
+    "mongoose-unique-validator": "^1.0.5",
+    "morgan": "~1.8.1",
+    "multer": "^1.3.0",
+    "pug": "~2.0.0-beta11",
+    "request": "^2.81.0",
+    "serve-favicon": "~2.4.2",
+    "uuid": "^3.1.0"
+  }
+}
