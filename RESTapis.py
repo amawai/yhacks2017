@@ -13,14 +13,15 @@ from graphtest import computeNodes, pplDict, bannedPpl
 @app.route('/')
 def main():
 	G = computeNodes()
-	badGuys = [ppl.getName() for ppl in pplDict.values() if ppl.getName() not in bannedPpl]
+	badGuys = [ppl.getName() for ppl in pplDict.values() if ppl.getName() not in bannedPpl and ppl.getFactor() > 0.70]
 	G = computeNodes()
 	plt.plot(121)
 	f = plt.figure(figsize=(5,4))
 	a = f.add_subplot(111)
 	plt.axis('off')
-	nx.draw(G, node_color=[ppl.getFactor() for ppl in pplDict.values()], font_weight='bold')
-	plt.savefig('./templates/graph.png')
+	#nx.draw(G, node_color=[ppl.getFactor() for ppl in pplDict.values()], font_weight='bold')
+	nx.draw(G, font_weight='bold')
+	plt.savefig('./static/graph.png')
 	return render_template('index.html', badGuys=badGuys)
 
 @app.route('/images/<whatever>')

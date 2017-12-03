@@ -3,7 +3,17 @@ from pprint import pprint
 import string
 from math import exp
 import numpy as np
+import pymongo
+from pymongo import MongoClient
+import csv
 G = nx.Graph()
+
+client = MongoClient('localhost', 27017)
+db = client.YHack
+actualCorporations = db.ActualCorporations
+courtCases = db.CourtCases
+investors = db.Investors
+bannedBrokers = db.BannedBrokers
 
 CORP_PENALTY_STEP = 0.1 #Suspicion points
 pplDict = {}
@@ -35,8 +45,11 @@ class Person:
         return self.empHistory
 
     def getFactor(self):
-        corpFactor = self.factor + corpDict[self.currentEmp].getFactor()
-        return min(1, corpFactor)
+        if (self.currentEmp in corpDict):
+            corpFactor = self.factor + corpDict[self.currentEmp].getFactor()
+        else:
+            corpFactor = 1
+        return max(0., min(1., corpFactor))
 
 class Corporation:
     def __init__(self, corpId, corpName, city, factor):
@@ -56,7 +69,10 @@ class Corporation:
         return self.factor
 
 def computeNodes():
-    #Adding the banned brokers to our network
+    temp = bannedBrokers.find({}, {"_id": False}, 0, 100)
+    bannedPpl = []
+    for bb in temp:
+        bannedPpl.append(bb['Individual Name'])
     for person in bannedPpl:
         G.add_node(person)
         #temporary measure:
@@ -70,35 +86,43 @@ def computeNodes():
             pplDict[person] = Person(12, person.split(' ')[0], ' '.join(person.split(' ')[1:]), 'Succ it', 1)
 
 
-    iapd = {} #populate with iapd values
+    temp4 = investors.find({}, {"_id": False}, 0, 100)
+    iapd = []
+    for i in temp4:
+        iapd.append(i)
     iapdPerson = None
 
     #Add corporations to the dictionary
-
-    #TEMPS:
-    corp1 = {'id': 123, 'name':'Succ it', 'city': 'NEW YORK'}
-    corp2 = {'id': 456, 'name':'Eat it', 'city': 'NEW YORK'}
-    corps = {} #Populate with corps values
-    corps['Succ it'] = corp1
-    corps['Eat it'] = corp2
-    #END TEMPS
-
-    courtDates = {} #Populate w/ court jsons
+    temp2 = actualCorporations.find({})
+    corps = []
+    for c in temp2:
+        corps.append(c)
+    temp3 = courtCases.find({}, {"_id": False}, 0, 100)
+    courtDates = []
+    for cc in temp3:
+        courtDates.append(cc)
     for corp in corps:
-        print(corps[corp])
-        corpDict[corp] = Corporation(corps[corp]['id'], corps[corp]['name'], corps[corp]['city'], 0)
+        corpDict[corp['DOS Process Name']] = Corporation(corp['DOS ID'], corp['DOS Process Name'], corp['DOS Process City'], 0)
         for courts in courtDates:
             #Putting the corp name into slug format found in json
-            if (courts.slug.split('-v-')[1] == '-'.join(corp.name.split(' ')).lower()):
-                #If the corp was a defendent, it sounds... sketch af
-                corpDict[corp].addCourtCitation(courts.citation_id)
+            if (len(courts['slug']) > 1 and courts['slug'].find('-v-') != -1):
+                if (courts['slug'].split('-v-')[1] == '-'.join(corp['DOS Process Name'].split(' ')).lower()):
+                    #If the corp was a defendent, it sounds... sketch af
+                    corpDict[corp['DOS Process Name']].addCourtCitation(courts['citation_id'])
 
     #Adding everybody as a node in the network
     for person in iapd:
-        iapdPerson = Person(person.indvlPK, person.firstNm, person.lastNm, corps[person.CrntEmp.orgNm], 0)
-        for corp in person.empHs:
-            iapdPerson.addToEmployeeHistory(corp.orgNm, corp.fromDt)
-        name = (person.firstNm + ' ' + person.lastNm).upper()
+        if (len(person['currentEmployment']) == 0):
+            iapdPerson = Person(person['indvlPK'], person['firstNm'], person['lastNm'], "unknown", 0)
+        elif (person['currentEmployment'][0]['orgNm'] in corpDict):
+            iapdPerson = Person(person['indvlPK'], person['firstNm'], person['lastNm'], corpDict[person['currentEmployment'][0]['orgNm']].__dict__['corpName'], 0)
+        else:
+            iapdPerson = Person(person['indvlPK'], person['firstNm'], person['lastNm'], "unknown", 0)
+        if (len(person['employmentHistory']) != 0):
+            for corp in person['employmentHistory']:
+                if (corp['orgNm'] in corpDict):
+                    iapdPerson.addToEmployeeHistory(corp['orgNm'], corp['fromDt'])
+        name = (person['firstNm'] + ' ' + person['lastNm']).upper()
         pplDict[name] = iapdPerson
         G.add_node(iapdPerson)
 
@@ -109,7 +133,7 @@ def computeNodes():
 
     # Assume suspicion is initialized somewhere as a dictionary of nodes to float
     suspicion = list(G.nodes())
-
+    print("Entering the danger zone")
     for person in pplDict.values():
         for otherPerson in pplDict.values():
             if (otherPerson != person):
@@ -160,5 +184,3 @@ def computeNodes():
     # Dictionary of visitedness: node as key
 
     return G
-
-computeNodes()
