@@ -3,12 +3,12 @@ from pprint import pprint
 import string
 from math import exp
 import numpy as np
-import matplotlib.pyplot as plt
 G = nx.Graph()
 
 CORP_PENALTY_STEP = 0.1 #Suspicion points
 pplDict = {}
 corpDict = {}
+bannedPpl = ["BARBARA JEAN ABADI", "JOSEPH ABBONDANTE", "EMMETT MAURICE ABERCROMBIE", "ANDREW MARTIN ABERN"]
 class Person:
     def __init__(self, crd, firstName, lastName, currentEmp, factor):
         self.crd = crd
@@ -56,9 +56,6 @@ class Corporation:
         return self.factor
 
 def computeNodes():
-    bannedPpl = ["BARBARA JEAN ABADI", "JOSEPH ABBONDANTE", "EMMETT MAURICE ABERCROMBIE", "ANDREW MARTIN ABERN"]
-
-
     #Adding the banned brokers to our network
     for person in bannedPpl:
         G.add_node(person)
@@ -162,16 +159,6 @@ def computeNodes():
     #print(list(G.edges))
     # Dictionary of visitedness: node as key
 
-    plt.plot(121)
-    print([ppl.getName() for ppl in pplDict.values()])
-    print([ppl.getFactor() for ppl in pplDict.values()])
-    nx.draw(G, node_color=[ppl.getFactor() for ppl in pplDict.values()], with_labels=True, font_weight='bold')
-    #nx.draw_shell(G, with_labels=True, font_weight='bold')
-    plt.show()
-
-    badGuys = [ppl.getName() for ppl in pplDict.values() if ppl.getName() not in bannedPpl]
-    print(G.number_of_nodes())
-    print(G.number_of_edges())
-    return badGuys
+    return G
 
 computeNodes()
