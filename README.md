@@ -1,3 +1,6 @@
+#What it is 
+Finra Challenge 2017: No-Machine-Learning Edition
+
 # The Challenge 
  > Are you ready to become a crime fighter in today’s rapidly growing world of electronic data? Believe it or not, technology can be a super power to help establish relationships between “bad guys” and the people who associate with them. As Superman says, “There is a right and a wrong in the universe, and the distinction is not that hard to make.” Can you identify an entire “gang” from the wide array of data available? Can you spot different types of relationships across the entities, events, and locations? Can you strengthen or weaken those connections by using your super powers to summon more data or different data? 
 
