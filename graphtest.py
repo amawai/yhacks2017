@@ -93,7 +93,7 @@ def computeNodes():
     iapdPerson = None
 
     #Add corporations to the dictionary
-    temp2 = actualCorporations.find({})
+    temp2 = actualCorporations.find({}, {"_id": False}, 0, 100)
     corps = []
     for c in temp2:
         corps.append(c)
@@ -107,7 +107,7 @@ def computeNodes():
             #Putting the corp name into slug format found in json
             if (len(courts['slug']) > 1 and courts['slug'].find('-v-') != -1):
                 if (courts['slug'].split('-v-')[1] == '-'.join(corp['DOS Process Name'].split(' ')).lower()):
-                    #If the corp was a defendent, it sounds... sketch af
+                    #If the corp was a defendant, it sounds... sketch af
                     corpDict[corp['DOS Process Name']].addCourtCitation(courts['citation_id'])
 
     #Adding everybody as a node in the network
@@ -134,6 +134,7 @@ def computeNodes():
     # Assume suspicion is initialized somewhere as a dictionary of nodes to float
     suspicion = list(G.nodes())
     print("Entering the danger zone")
+    # connect people who are working at the same company
     for person in pplDict.values():
         for otherPerson in pplDict.values():
             if (otherPerson != person):
@@ -148,7 +149,7 @@ def computeNodes():
     # Grab neighbours of all nodes
     succ = nx.dfs_successors(G)
     pprint(succ)
-    # Function for recursively checking nodezplz
+    # Function for recursively checking nodes
     def recur(nodeCurrent, dist):
       # Update shortest distance to current node
       deltaAtNodes[nodeCurrent] = dist
@@ -167,7 +168,7 @@ def computeNodes():
             # Replace suspicion from longer path with suspicion from shorter path
                 pplDict[nodeCurrent].addToFactor((-deltaAtNodes[nodeCurrent]) + exp(-(dist+1)))
 
-    # Starting from each bad persx on, fill in the suspicion of connected people
+    # Starting from each bad person, fill in the suspicion of connected people
     for badPerson in bannedPpl:
       # Set deltas to zero for each node
       deltaAtNodes = {k:0 for k in list(G.nodes)}
