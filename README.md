@@ -1,4 +1,4 @@
-#What it is 
+# What it is 
 Finra Challenge 2017: No-Machine-Learning Edition
 
 # The Challenge 
